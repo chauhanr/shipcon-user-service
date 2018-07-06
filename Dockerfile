@@ -1,12 +1,12 @@
-FROM golang:1.9.0 as builder
+#FROM golang:1.9.0 as builder
 
-WORKDIR /go/src/github.com/chauhanr/shipcon/user-service
+#WORKDIR /go/src/github.com/chauhanr/shipcon-user-service
 
-COPY . .
+#COPY . .
 
-RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep init && dep ensure
-RUN CGO_ENABLED=0 GOOS=linux go build -o user-service -a -installsuffix cgo main.go repository.go handler.go database.go tocken-service.go
+#RUN go get -u github.com/golang/dep/cmd/dep
+#RUN dep init && dep ensure
+#RUN CGO_ENABLED=0 GOOS=linux go build -o user-service -a -installsuffix cgo main.go repository.go handler.go database.go tocken-service.go
 
 FROM debian:latest
 
@@ -14,7 +14,7 @@ FROM debian:latest
 
 RUN mkdir /app
 WORKDIR /app
-#ADD user-service /app/user-service
-COPY --from=builder /go/src/github.com/chauhanr/shipcon/user-service/user-service .
+ADD shipcon-user-service /app/user-service
+#COPY --from=builder /go/src/github.com/chauhanr/shipcon-user-service/user-service .
 
 CMD ["./user-service"]
