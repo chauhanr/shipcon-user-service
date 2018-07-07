@@ -2,6 +2,8 @@ build:
 	protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/chauhanr/shipcon-user-service proto/user/user.proto
 	GOOS=linux GOARCH=amd64 go build -o shipcon-user-service
 	docker build -t shipcon-user-service .
+	go clean
+
 
 run:
 	docker run -d --net="host" \

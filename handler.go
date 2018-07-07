@@ -22,7 +22,7 @@ func (srv *service) Get(ctx context.Context, req *pb.User, res *pb.Response) err
 	return nil
 }
 
-func (srv *service) GetAll(ctx context.Context, req *pb.User, res *pb.Response) error{
+func (srv *service) GetAll(ctx context.Context, req *pb.Request, res *pb.Response) error{
 	users, err := srv.repo.GetAll()
 	if err != nil{
 		return err
@@ -33,12 +33,14 @@ func (srv *service) GetAll(ctx context.Context, req *pb.User, res *pb.Response) 
 
 func (srv *service) Auth(ctx context.Context, req *pb.User, res *pb.Token) error{
 	log.Println("Logging in with: ", req.Email, req.Password)
+	reqPass := req.Password
 	user,err := srv.repo.GetByEmailAndPassword(req)
 	if err != nil{
 		return err
 	}
 	// compare password with hashed password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil{
+	// log.Printf("User password %s, DB password %s", user.Password, reqPass)
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqPass)); err != nil{
 		return err
 	}
 	token, err := srv.tokenService.Encode(user)
