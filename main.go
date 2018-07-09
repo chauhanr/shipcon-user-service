@@ -22,7 +22,11 @@ func main(){
 		micro.Version("lastest"),
 	)
 	srv.Init()
-	pb.RegisterUserServiceHandler(srv.Server(), &service{repo, tokenService})
+	// adding nats broker plugin
+	pubsub := srv.Server().Options().Broker
+
+
+	pb.RegisterUserServiceHandler(srv.Server(), &service{repo, tokenService, pubsub})
 	if err := srv.Run(); err != nil{
 		log.Fatal(err)
 	}

@@ -7,10 +7,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"errors"
 	"fmt"
+	"github.com/micro/go-micro/broker"
+	"encoding/json"
 )
+
+var topic = "user.created"
+
 type service struct{
 	repo Repository
 	tokenService Authable
+	PubSub broker.Broker
 }
 
 func (srv *service) Get(ctx context.Context, req *pb.User, res *pb.Response) error{
@@ -70,6 +76,30 @@ func (srv *service) Create(ctx context.Context, req *pb.User, res *pb.Response) 
 
 	res.User = req
 	res.Token = &pb.Token{Token: token}
+
+	if err := srv.publishEvent(req); err != nil{
+		return err
+	}
+
+	return nil
+}
+
+func (srv *service) publishEvent(user *pb.User) error{
+	body, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+	msg := &broker.Message{
+		Header: map[string]string{
+			"id": user.Id,
+		},
+		Body: body,
+	}
+
+	if err := srv.PubSub.Publish(topic, msg); err != nil{
+		log.Printf("[pub] failure: %v", err)
+	}
+
 	return nil
 }
 
